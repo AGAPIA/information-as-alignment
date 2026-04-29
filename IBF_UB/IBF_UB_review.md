@@ -206,20 +206,20 @@ Two scripts were used for aligned comparison on the **same frozen `ViT-B/16 + PC
 
 `compare_cifar100_continual.py` evaluates ordinary classifier heads:
 
-- `linear`
-- `mlp`
-- `deepmlp`
+- `linear`: a single linear classifier on top of the frozen features.
+- `mlp`: a small neural-network classifier head.
+- `deepmlp`: a deeper neural-network classifier head.
 
 each under:
 
-- `finetune`
-- `replay`
+- `finetune`: ordinary sequential neural-network fine-tuning. The head is trained on Task 0, then Task 1, and so on, using only the current task's data at each step. There is no explicit old-task memory, replay buffer, or parameter-protection term, so the method is expected to forget when new tasks overwrite the head.
+- `replay`: the same head architecture, but with a bounded memory buffer of old examples. The implementation uses reservoir sampling, so the buffer remains an approximately uniform sample of the stream seen so far. During later tasks, each current-task minibatch is trained together with a sampled replay minibatch from the buffer, using the same cross-entropy objective. In other words, replay preserves old decision boundaries by periodically showing the classifier old feature vectors and labels again.
 
 `compare_cifar100_frozen_features.py` evaluates the notebook-style baseline family:
 
-- `mlp`
-- `replay`
-- `ewc`
+- `mlp`: the notebook-style neural baseline trained sequentially on the frozen features without replay. This is essentially the current-task-only fine-tuning baseline in the notebook's feature space.
+- `replay`: the same MLP baseline augmented with a reservoir replay buffer. After each task, examples from that task are added to the buffer; during later training, sampled old examples are mixed into the loss so the model continues to rehearse earlier classes.
+- `ewc`: Elastic Weight Consolidation. EWC does not store and replay old examples during ordinary updates. Instead, after a task it estimates which model parameters were important for that task using a Fisher-information approximation, stores the old parameter values, and adds a penalty when later training moves important parameters too far away. It is a parameter-protection baseline rather than a memory-replay baseline.
 
 The replay implementation was aligned across the scripts to use proper **reservoir sampling** with matched feature-mode defaults:
 
