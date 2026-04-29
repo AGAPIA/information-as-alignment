@@ -229,6 +229,12 @@ The replay implementation was aligned across the scripts to use proper **reservo
 
 ### 4.2 Aligned Results
 
+The result tables use the evaluation metrics proposed in the original IBF CIFAR-100 evaluation:
+
+- **Task-IL**: task-incremental accuracy. At test time, the evaluator is told which 5-class task the image belongs to, and the model only chooses among those task classes.
+- **Class-IL**: class-incremental accuracy. At test time, the model must choose among all classes seen so far, without being given the task identity. This is usually the stricter continual-learning metric.
+- **BT**: backward transfer. Here it measures how much performance on earlier tasks changes after later tasks are learned. Values closer to zero mean less forgetting; more negative values mean stronger forgetting.
+
 Bold values mark the best value in each table column. For `BT`, higher is better, so values closer to zero are preferred. For `time`, lower is faster.
 
 #### A. Running the original IBF repo, CIFAR-100 notebook, and reading `CIFAR-paper-results.json`:
@@ -271,14 +277,14 @@ In the first ablation script, `compare_cifar100_continual.py`, the clear perform
 - best `Class-IL`: `0.6582`
 - best `BT`: `-0.0151`
 
-This means that, on the same frozen `ViT-B/16 + PCA` feature representation, a simple linear classifier with a replay buffer beats the original IBF linear readout on every directly comparable metric. It also beats the IBF log readout on `Task-IL`, although IBF log still has the best reported `BT` among the rows shown and lacks a reported `Class-IL` value.
+**This means that, on the same frozen `ViT-B/16 + PCA` feature representation, a simple linear classifier with a replay buffer beats the original IBF linear readout on every directly comparable metric. It also beats the IBF log readout on `Task-IL`, although IBF log still has the best reported `BT` among the rows shown and lacks a reported `Class-IL` value.**
 
 In the second ablation script, `compare_cifar100_frozen_features.py`, the best notebook-style baseline is also replay:
 
 - `replay`: `0.8702 / 0.5820 / -0.0797`
 - original IBF linear: `0.8394 / 0.5137 / -0.0853`
 
-So even the more conservative notebook-style replay baseline exceeds the original IBF linear result on `Task-IL`, `Class-IL`, and `BT`, while running in minutes rather than hours.
+**So even the more conservative notebook-style replay baseline exceeds the original IBF linear result on `Task-IL`, `Class-IL`, and `BT`, while running in minutes rather than hours.**
 
 The failure cases are also informative. Current-task-only fine-tuning performs poorly across all head types, and EWC performs poorly in the notebook-style baseline script. The useful pattern is not "larger neural head wins"; the replay ordering is:
 
