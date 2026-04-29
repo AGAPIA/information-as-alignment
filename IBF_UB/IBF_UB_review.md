@@ -4,7 +4,7 @@ This is a technical review and ablation study for the methods discussed in [Info
 
 The technical discussion focuses on Domain III, the CIFAR-100 experiment, because it is the implementation closest to a standard continual-learning benchmark. Unlike RRW, which is a synthetic mechanism-confirmation domain, and Chess, which depends on a Stockfish oracle and a supplied chess encoder, CIFAR-100 uses a familiar high-dimensional classification task, fixed train/test data, Task-IL and Class-IL metrics, and baselines that can be re-run on the same frozen features. For that reason, it is the strongest place to evaluate whether IBF is practically competitive with simpler continual-learning methods such as replay.
 
-The other implemented domains are summarized in [Other IBF usecases in the implementation and paper](#6-other-ibf-usecases-in-the-implementation-and-paper).
+The other implemented domains are summarized in [Other IBF usecases in the implementation and paper](#53-other-ibf-usecases-in-the-implementation-and-paper).
 
 ## 1. Problem Formulation
 
@@ -326,7 +326,7 @@ The most defensible conclusion is therefore limited:
 
 If the CIFAR claim were to be evaluated rigorously, the next step would be multi-seed runs with mean and variance reporting. Until then, the aligned single-seed evidence favors replay.
 
-## 6. Other IBF usecases in the implementation and paper
+### 5.3 Other IBF usecases in the implementation and paper
 
 The paper and repository implement two additional domains before CIFAR-100. They matter for the theory, but they play different methodological roles from Domain III.
 
@@ -334,7 +334,7 @@ The paper and repository implement two additional domains before CIFAR-100. They
 - **Domain II: Chess**: Chess tests whether the same mechanism can support strategic action selection under a more complex external evaluation. Positions are sampled from Lichess games and grouped into three contexts: materially imbalanced, quiet/balanced, and restricted-mobility positions. A frozen CNN maps each board to an `8D` representation; each candidate move is represented as the resulting board embedding plus `4D` move features, giving a `12D` move space. Training uses Stockfish depth 4 to produce the discrepancy signal, while evaluation uses Stockfish depth 8 centipawn scores. This is more realistic than RRW, but still oracle-driven and dependent on the supplied chess encoder.
 - **Why CIFAR-100 is the most relevant practical test**: CIFAR-100 is the closest of the three to a standard continual-learning benchmark. It uses a familiar image-classification setup, fixed train/test data, Task-IL and Class-IL metrics, and baselines that can be re-run on the same frozen features. That makes the replay comparison in this note more probative for practical methodology than RRW's synthetic mechanism test or Chess's Stockfish-mediated strategic evaluation.
 
-## 7. Future Use Cases
+## 6. Future Use Cases
 
 The compressed-memory framing points to a narrower and more defensible set of possible future use cases than generic benchmark superiority. These should be read as hypotheses for future systems, not as claims established by the CIFAR notebook.
 
@@ -345,3 +345,12 @@ The compressed-memory framing points to a narrower and more defensible set of po
   - **Rare manufacturing defects**: a visual-inspection model may classify common defects well but miss a defect morphology that appears only occasionally. IBF-style local memories could store corrections around the feature-space neighborhood of that morphology, so future examples with the same visual structure receive a local score adjustment.
   - **Medical subtypes**: a diagnostic model may have a useful general representation but underperform on a rare subtype that has consistent imaging or tabular signatures. A memory layer could learn local residual corrections for that subtype without retraining the whole model, assuming the subtype recurs often enough to form stable memories.
   - **Recurring sensor or scanner artifacts**: this is plausible only when the artifact is systematic rather than random. For example, a specific scanner might produce a faint stripe, dead-pixel cluster, calibration drift, or repeating noise pattern that pushes the frozen model toward the wrong class. If that pattern is represented in the frozen features and repeatedly co-occurs with the same kind of prediction error, IBF could create local memories near those feature-space regions. Later, when a similar artifact appears again, the read path would add a local `delta_R` correction for the affected class scores. This would not help much for one-off noise, changing sensor failures, or artifacts that the encoder does not preserve.
+
+## 7. Ablation Conclusions Compared With Original IBF
+
+- The original IBF CIFAR-100 notebook remains an interesting local-memory implementation, but its clean full-metric row is the `linear readout`: `0.8394 / 0.5137 / -0.0853`.
+- The original `log readout` reports stronger `Task-IL` and `BT` (`0.9026 / -0.0039`), but it does not report `Class-IL`, so it is not the cleanest row for full comparison.
+- Our broader ablation shows `linear/replay` is the strongest tested method overall: `0.9451 / 0.6582 / -0.0151`, while running in minutes rather than hours.
+- Our notebook-style ablation also favors replay: `replay` beats original IBF linear on `Task-IL`, `Class-IL`, and `BT` (`0.8702 / 0.5820 / -0.0797`).
+- Plain fine-tuning and EWC are weak baselines here; the real practical baseline to beat is replay on the same frozen features.
+- The CIFAR evidence therefore supports IBF as an alternative compressed/local-memory mechanism, not as a clearly superior continual-learning method over simple replay.
