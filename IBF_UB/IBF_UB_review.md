@@ -219,7 +219,7 @@ each under:
 
 - `mlp`: the notebook-style neural baseline trained sequentially on the frozen features without replay. This is essentially the current-task-only fine-tuning baseline in the notebook's feature space.
 - `replay`: the same MLP baseline augmented with a reservoir replay buffer. After each task, examples from that task are added to the buffer; during later training, sampled old examples are mixed into the loss so the model continues to rehearse earlier classes.
-- `ewc`: Elastic Weight Consolidation. EWC does not store and replay old examples during ordinary updates. Instead, after a task it estimates which model parameters were important for that task using a Fisher-information approximation, stores the old parameter values, and adds a penalty when later training moves important parameters too far away. It is a parameter-protection baseline rather than a memory-replay baseline.
+- `ewc`: [Elastic Weight Consolidation](https://arxiv.org/abs/1612.00796). EWC does not store and replay old examples during ordinary updates. Instead, after a task it estimates which model parameters were important for that task using a Fisher-information approximation, stores the old parameter values, and adds a penalty when later training moves important parameters too far away. It is a parameter-protection baseline rather than a memory-replay baseline.
 
 The replay implementation was aligned across the scripts to use proper **reservoir sampling** with matched feature-mode defaults:
 
@@ -229,66 +229,64 @@ The replay implementation was aligned across the scripts to use proper **reservo
 
 ### 4.2 Aligned Results
 
-Notebook reference from `CIFAR-paper-results.json`:
+Bold values mark the best value in each table column. For `BT`, higher is better, so values closer to zero are preferred. For `time`, lower is faster.
+
+#### A. Running the original IBF repo, CIFAR-100 notebook, and reading `CIFAR-paper-results.json`:
 
 | method | Task-IL | Class-IL | BT | time |
 | --- | ---: | ---: | ---: | ---: |
-| `IBF full_42 (linear readout)` | `0.8394` | `0.5137` | `-0.0853` | `13.5h` |
-| `IBF full_42 (log readout)` | `0.9026` | `-` | `-0.0039` | `13.5h` |
+| `IBF full_42 (linear readout)` | `0.8394` | **`0.5137`** | `-0.0853` | **`13.5h`** |
+| `IBF full_42 (log readout)` | **`0.9026`** | `-` | **`-0.0039`** | **`13.5h`** |
 
 The `log` readout uses `log(R_field) + delta_R`, so the cleaner direct comparison is the **linear** notebook readout.
 
-Results from `compare_cifar100_continual.py`:
+#### B. Running our ablation script `compare_cifar100_continual.py`:
 
 | method | Task-IL | Class-IL | BT | time |
 | --- | ---: | ---: | ---: | ---: |
-| `linear/finetune` | `0.4439` | `0.1479` | `-0.5420` | `0.4m` |
-| `linear/replay` | `0.9451` | `0.6582` | `-0.0151` | `2.5m` |
+| `linear/finetune` | `0.4439` | `0.1479` | `-0.5420` | **`0.4m`** |
+| `linear/replay` | **`0.9451`** | **`0.6582`** | **`-0.0151`** | `2.5m` |
 | `mlp/finetune` | `0.4074` | `0.1289` | `-0.5811` | `2.3m` |
 | `mlp/replay` | `0.9278` | `0.6328` | `-0.0322` | `3.9m` |
 | `deepmlp/finetune` | `0.3254` | `0.0499` | `-0.6673` | `1.8m` |
 | `deepmlp/replay` | `0.8844` | `0.6026` | `-0.0711` | `2.7m` |
 
-Results from `compare_cifar100_frozen_features.py`:
+#### C. Running our ablation script `compare_cifar100_frozen_features.py`:
 
 | method | Task-IL | Class-IL | BT | time |
 | --- | ---: | ---: | ---: | ---: |
-| `mlp` | `0.3473` | `0.0642` | `-0.6421` | `1.5m` |
-| `replay` | `0.8702` | `0.5820` | `-0.0797` | `4.3m` |
+| `mlp` | `0.3473` | `0.0642` | `-0.6421` | **`1.5m`** |
+| `replay` | **`0.8702`** | **`0.5820`** | **`-0.0797`** | `4.3m` |
 | `ewc` | `0.2950` | `0.0552` | `-0.6996` | `3.7m` |
 
 ### 4.3 Interpretation
 
-The aligned comparison changes the practical conclusion.
+The aligned comparison changes the practical conclusion because the strongest results do not come from the original IBF CIFAR-100 run.
 
-The notebook-style replay baseline now gives:
+Within the original notebook results, the `log` IBF readout gives the best reported `Task-IL` (`0.9026`) and `BT` (`-0.0039`), but it does not report `Class-IL`. The `linear` IBF readout is the cleaner full comparison row because it reports all three metrics: `Task-IL = 0.8394`, `Class-IL = 0.5137`, and `BT = -0.0853`.
 
-- `Task-IL = 0.8702`
-- `Class-IL = 0.5820`
-- `BT = -0.0797`
+In the first ablation script, `compare_cifar100_continual.py`, the clear performance winner is `linear/replay`:
 
-which is better than notebook IBF linear:
+- best `Task-IL`: `0.9451`
+- best `Class-IL`: `0.6582`
+- best `BT`: `-0.0151`
 
-- `Task-IL = 0.8394`
-- `Class-IL = 0.5137`
-- `BT = -0.0853`
+This means that, on the same frozen `ViT-B/16 + PCA` feature representation, a simple linear classifier with a replay buffer beats the original IBF linear readout on every directly comparable metric. It also beats the IBF log readout on `Task-IL`, although IBF log still has the best reported `BT` among the rows shown and lacks a reported `Class-IL` value.
 
-The broader feature-head comparison is even stronger, with `linear/replay` reaching `0.9451 / 0.6582 / -0.0151`.
+In the second ablation script, `compare_cifar100_frozen_features.py`, the best notebook-style baseline is also replay:
 
-The main lessons are:
+- `replay`: `0.8702 / 0.5820 / -0.0797`
+- original IBF linear: `0.8394 / 0.5137 / -0.0853`
 
-- fine-tuning alone fails badly
-- EWC also fails badly here
-- replay is the real baseline to beat
-- with strong frozen `ViT-B/16 + PCA` features, even a linear head plus replay is extremely strong
+So even the more conservative notebook-style replay baseline exceeds the original IBF linear result on `Task-IL`, `Class-IL`, and `BT`, while running in minutes rather than hours.
 
-The most informative pattern is:
+The failure cases are also informative. Current-task-only fine-tuning performs poorly across all head types, and EWC performs poorly in the notebook-style baseline script. The useful pattern is not "larger neural head wins"; the replay ordering is:
 
 - `linear/replay > mlp/replay > deepmlp/replay`
 
-This suggests that the frozen representation is already very clean, and extra head capacity mainly adds instability rather than useful expressivity.
+This suggests that the frozen representation is already highly separable. Extra head capacity mainly adds instability, while replay directly preserves old decision boundaries by retaining a small memory of old feature vectors and labels.
 
-Why replay wins here is not mysterious. Once the representation is already highly separable, retaining a buffer of old feature vectors is enough to preserve old decision boundaries directly. On this setup, that is simpler, faster, and empirically stronger than learning a separate local-correction memory system.
+The practical baseline to beat is therefore not plain fine-tuning or EWC. It is simple replay, especially `linear/replay`. Under this aligned comparison, IBF remains an interesting local-memory mechanism, but it is not the strongest CIFAR-100 method among the tested alternatives.
 
 ## 5. Glossary and Assessment
 
