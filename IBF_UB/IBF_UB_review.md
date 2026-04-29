@@ -294,9 +294,9 @@ This suggests that the frozen representation is already highly separable. Extra 
 
 The practical baseline to beat is therefore not plain fine-tuning or EWC. It is simple replay, especially `linear/replay`. Under this aligned comparison, IBF remains an interesting local-memory mechanism, but it is not the strongest CIFAR-100 method among the tested alternatives.
 
-## 5. Glossary and Assessment
+## 5. Glossary and Other IBF Usecases
 
-### 5.1 Glossary
+### 5.1 Glossary and mapping
 
 | Notebook term | Meaning here | Closest ML wording |
 | --- | --- | --- |
@@ -314,19 +314,7 @@ The practical baseline to beat is therefore not plain fine-tuning or EWC. It is 
 | gate | decide whether an old memory can contribute | context-based masking |
 | `D` | discrepancy signal used for updates | supervised residual / error signal |
 
-### 5.2 Assessment
-
-The notebook remains interesting as a theory-driven memory architecture for continual learning. Its CIFAR implementation is coherent and the ML mapping is clear: a frozen-feature classifier plus a local kernel-memory correction layer.
-
-However, under aligned comparison on the same frozen features, the strongest practical result does not favor IBF. Standard replay baselines, especially simple replay on top of a linear head, match or exceed IBF while being much faster and much simpler to justify.
-
-The most defensible conclusion is therefore limited:
-
-**on Domain III, IBF is best viewed as an alternative memory mechanism rather than a clearly superior continual-learning method**
-
-If the CIFAR claim were to be evaluated rigorously, the next step would be multi-seed runs with mean and variance reporting. Until then, the aligned single-seed evidence favors replay.
-
-### 5.3 Other IBF usecases in the implementation and paper
+### 5.2 Other IBF usecases in the implementation and paper
 
 The paper and repository implement two additional domains before CIFAR-100. They matter for the theory, but they play different methodological roles from Domain III.
 
@@ -348,9 +336,9 @@ The compressed-memory framing points to a narrower and more defensible set of po
 
 ## 7. Ablation Conclusions Compared With Original IBF
 
-- The original IBF CIFAR-100 notebook remains an interesting local-memory implementation, but its clean full-metric row is the `linear readout`: `0.8394 / 0.5137 / -0.0853`.
-- The original `log readout` reports stronger `Task-IL` and `BT` (`0.9026 / -0.0039`), but it does not report `Class-IL`, so it is not the cleanest row for full comparison.
-- Our broader ablation shows `linear/replay` is the strongest tested method overall: `0.9451 / 0.6582 / -0.0151`, while running in minutes rather than hours.
-- Our notebook-style ablation also favors replay: `replay` beats original IBF linear on `Task-IL`, `Class-IL`, and `BT` (`0.8702 / 0.5820 / -0.0797`).
+- The original IBF CIFAR-100 notebook remains an interesting theory-driven local-memory implementation; its clean full-metric row is `0.8394 / 0.5137 / -0.0853` and about `13.5h`.
+- Our first ablation shows `linear/replay` is the strongest tested method overall: `0.9451 / 0.6582 / -0.0151`, while running in minutes (`<5m`) rather than hours.
+- Our second ablation also beats original IBF linear on `Task-IL`, `Class-IL`, and `BT` (`0.8702 / 0.5820 / -0.0797`).
 - Plain fine-tuning and EWC are weak baselines here; the real practical baseline to beat is replay on the same frozen features.
 - The CIFAR evidence therefore supports IBF as an alternative compressed/local-memory mechanism, not as a clearly superior continual-learning method over simple replay.
+- If the CIFAR claim were to be evaluated more rigorously, the next step would be multi-seed runs with mean and variance reporting for IBF and the replay baselines under the same frozen-feature protocol.
