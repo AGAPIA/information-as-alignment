@@ -1,0 +1,34 @@
+# Python caches and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Jupyter local state
+.ipynb_checkpoints/
+
+# IDE/editor local state
+.idea/
+.vscode/
+
+# Local datasets, caches, and generated experiment outputs
+cache/
+data/
+results/
+cifar_out/
+rrw_paper_outputs/
+toy_model_outputs/
+
+# Local logs and temporary artifacts
+*.log
+*.tmp
+*.bak
+
+# Local analysis exports not intended for the fork
+/requirements.txt
+/seminar-slides.txt
+/toy.md
