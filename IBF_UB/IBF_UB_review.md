@@ -341,4 +341,3 @@ The compressed-memory framing points to a narrower and more defensible set of po
 - Our second ablation also beats original IBF linear on `Task-IL`, `Class-IL`, and `BT` (`0.8702 / 0.5820 / -0.0797`).
 - Plain fine-tuning and EWC are weak baselines here; the real practical baseline to beat is replay on the same frozen features.
 - The CIFAR evidence therefore supports IBF as an alternative compressed/local-memory mechanism, not as a clearly superior continual-learning method over simple replay.
-- If the CIFAR claim were to be evaluated more rigorously, the next step would be multi-seed runs with mean and variance reporting for IBF and the replay baselines under the same frozen-feature protocol.
