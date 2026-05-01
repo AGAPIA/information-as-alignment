@@ -4,7 +4,7 @@ This is a technical review and ablation study for the methods discussed in [Info
 
 The technical discussion focuses on Domain III, the CIFAR-100 experiment, because it is the implementation closest to a standard continual-learning benchmark. Unlike RRW, which is a synthetic mechanism-confirmation domain, and Chess, which depends on a Stockfish oracle and a supplied chess encoder, CIFAR-100 uses a familiar high-dimensional classification task, fixed train/test data, Task-IL and Class-IL metrics, and baselines that can be re-run on the same frozen features. For that reason, it is the strongest place to evaluate whether IBF is practically competitive with simpler continual-learning methods such as replay.
 
-The other implemented domains are summarized in [Other IBF usecases in the implementation and paper](#53-other-ibf-usecases-in-the-implementation-and-paper).
+The other implemented domains are summarized in [Other IBF use cases in the implementation and paper](#52-other-ibf-use-cases-in-the-implementation-and-paper).
 
 ## 1. Problem Formulation
 
@@ -294,7 +294,7 @@ This suggests that the frozen representation is already highly separable. Extra 
 
 The practical baseline to beat is therefore not plain fine-tuning or EWC. It is simple replay, especially `linear/replay`. Under this aligned comparison, IBF remains an interesting local-memory mechanism, but it is not the strongest CIFAR-100 method among the tested alternatives.
 
-## 5. Glossary and Other IBF Usecases
+## 5. Glossary and Other IBF Use Cases
 
 ### 5.1 Glossary and mapping
 
@@ -314,7 +314,7 @@ The practical baseline to beat is therefore not plain fine-tuning or EWC. It is 
 | gate | decide whether an old memory can contribute | context-based masking |
 | `D` | discrepancy signal used for updates | supervised residual / error signal |
 
-### 5.2 Other IBF usecases in the implementation and paper
+### 5.2 Other IBF use cases in the implementation and paper
 
 The paper and repository implement two additional domains before CIFAR-100. They matter for the theory, but they play different methodological roles from Domain III.
 
