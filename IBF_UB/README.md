@@ -25,6 +25,15 @@ cache/cifar100_vitb16_pca64_features.npz
 
 Use `--overwrite-cache` only when you intentionally want to recompute the frozen `ViT-B/16 + PCA` features.
 
+Default result files are written at the repository root:
+
+```text
+cifar_frozen_feature_compare.json
+cifar_compare_results.json
+```
+
+Generated data, caches, and result files are intentionally ignored by Git.
+
 ## Scope
 
 The review focuses on Domain III / CIFAR-100 because it is the closest implemented domain to a standard continual-learning benchmark with comparable baselines. RRW and Chess are discussed as supporting mechanism and strategic-decision domains, but the practical comparison is centered on CIFAR-100.
